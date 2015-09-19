@@ -2,10 +2,10 @@
 ```
 usage: BrefPlotter.py [-h] [-n] [-p] [-t {AL,NL,MLB} | -tc TEAM [TEAM ...]]
                       [-x X_HINT] [-y YEAR] [--y-axis Y Y]
-                      {win_loss_margins,win_loss_streaks}
+                      {win_loss_streaks,win_loss_margins,outcome_scoring,outcome_conceding}
 
 positional arguments:
-  {win_loss_margins,win_loss_streaks}
+  {win_loss_streaks,win_loss_margins,outcome_scoring,outcome_conceding}
                         Data type requesting to plotted.
 
 optional arguments:
