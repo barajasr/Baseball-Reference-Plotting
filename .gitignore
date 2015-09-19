@@ -58,3 +58,7 @@ target/
 
 # vim swap files
 *.swp
+
+# Ignore plot folders
+1*/
+2*/
