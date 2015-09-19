@@ -6,7 +6,6 @@ import numpy as np
 import Auxiliary as aux
 import BrefScraper as brf
 
-
 class Plot(object):
     """ With data obtained from BrefScraper, Plot clean the raw
         data and saves it to file.
@@ -17,8 +16,6 @@ class Plot(object):
         self.scraper = scraper
         self.histogram = histogram
 
-        # Used for plotting avg case
-        self.cumulative = {}
         # Axes limit hints to use
         self.x_min = 1
         self.x_max = 10
@@ -75,17 +72,27 @@ class Plot(object):
             key_max = dict_max
         return key_max
 
-
-    def plot(self, plot_type):
+    def plot(self, plot_type, average):
         """ Main point of entry. Set off scraper, process and plot data.
         """
         # Dict with appropiate functions for data transforming defined
         # at bottom of module.
         (self.x_min, teams_raw, team_set, get_clean, to_plot) = OPTIONS[plot_type]
+        cumulative = aux.Data([], [])
         for team, raw_data in teams_raw(self.scraper):
             raw_set = team_set(raw_data)
             data = get_clean(self, raw_set)
             to_plot(self, team, data)
+
+            if average:
+                aux.aggragate_cumulative(cumulative, data)
+
+        if average:
+            number_of_teams = len(self.scraper.teams)
+            for index in range(len(cumulative.negative)):
+                cumulative.negative[index] /= number_of_teams
+                cumulative.positive[index] /= number_of_teams
+            to_plot(self, 'League Average', cumulative)
 
     def _plot_outcome_conceding(self, team, data):
         """ Sets the specific params for of win/loss outcome when team concedes

@@ -8,6 +8,17 @@ Data = namedtuple('Data', 'negative positive')
 Labels = namedtuple('Labels', 'team x y tag')
 Record = namedtuple('Record', 'wins, losses')
 
+def aggragate_cumulative(cumulative, to_add):
+    """ Increment/insert values from new set into the cumulative set.
+    """
+    for index in range(len(to_add.negative)):
+        if index < len(cumulative.negative):
+            cumulative.negative[index] += to_add.negative[index]
+            cumulative.positive[index] += to_add.positive[index]
+        else:
+            cumulative.negative.append(to_add.negative[index])
+            cumulative.positive.append(to_add.positive[index])
+
 def count_wins_losses(raw_data):
     """ From incoming list of ['W', 'L', ...] record win/loss streaks.
         Return dict with said counts.
