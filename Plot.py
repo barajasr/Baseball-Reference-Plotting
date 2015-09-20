@@ -88,10 +88,7 @@ class Plot(object):
                 aux.aggragate_cumulative(cumulative, data)
 
         if average:
-            number_of_teams = len(self.scraper.teams)
-            for index in range(len(cumulative.negative)):
-                cumulative.negative[index] /= number_of_teams
-                cumulative.positive[index] /= number_of_teams
+            aux.average_data(cumulative, len(self.scraper.teams))
             to_plot(self, 'League Average', cumulative)
 
     def _plot_outcome_conceding(self, team, data):

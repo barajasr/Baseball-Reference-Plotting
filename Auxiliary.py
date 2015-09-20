@@ -19,6 +19,11 @@ def aggragate_cumulative(cumulative, to_add):
             cumulative.negative.append(to_add.negative[index])
             cumulative.positive.append(to_add.positive[index])
 
+def average_data(cumulative, number_of_teams):
+    for index in range(len(cumulative.negative)):
+        cumulative.negative[index] /= number_of_teams
+        cumulative.positive[index] /= number_of_teams
+
 def count_wins_losses(raw_data):
     """ From incoming list of ['W', 'L', ...] record win/loss streaks.
         Return dict with said counts.
