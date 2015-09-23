@@ -1,5 +1,28 @@
 from collections import namedtuple
 
+TABLE_HEADERS =  ['RK',         # Ignore, relevant for online sorting
+                  'GM#',        # Game number of the season
+                  'DATE',       # Date of game
+                  'BOXSCORE',   # Link to boxscore
+                  'TM',         # Team looking up
+                  'HOME_AWAY',  # '' = home, '@' = away
+                  'OPP',        # Opponent
+                  'W/L',        # Win, loss, walkoff; '[W|L](-wo)?'
+                  'R',          # Runs scored
+                  'RA',         # Runs scored against
+                  'INN',        # Innings played if extras, '' otherwise
+                  'W-L',        # Running win/loss record
+                  'RANK',       # Rank within division
+                  'GB',         # Games back '[  Tied|(up )?\d.\d]'
+                  'WIN',        # Winning pitcher
+                  'LOSS',       # Lossing pitcher
+                  'SAVE',       # Saving pitcher if any
+                  'TIME',       # Duration of game
+                  'D/N',        # Day/Night game
+                  'ATTENDANCE', # Number of attendees
+                  'STREAK']     # Win/loss streak; '[-|+]+'
+COLUMN = dict(zip(TABLE_HEADERS, range(len(TABLE_HEADERS))))
+
 TARGETS = ['scores', 'wins_losses']
 LOSS, WIN = 'L', 'W'
 
@@ -20,9 +43,27 @@ def aggragate_cumulative(cumulative, to_add):
             cumulative.positive.append(to_add.positive[index])
 
 def average_data(cumulative, number_of_teams):
+    """ Given the whole set, average for number of teams.
+    """
     for index in range(len(cumulative.negative)):
         cumulative.negative[index] /= number_of_teams
         cumulative.positive[index] /= number_of_teams
+
+def columns_values(tds):
+    """ Take in the list of table data cells and return the values required.
+    """
+    similar = ['RK', 'GM#', 'TM', 'HOME_AWAY', 'OPP', 'W/L', 'R', 'RA', 'INN',
+               'W-L', 'RANK', 'GB', 'TIME', 'D/N', 'ATTENDANCE', 'STREAK']
+    for index in [COLUMN[key] for key in similar]:
+        tds[index] = tds[index].text
+
+    similar = ['WIN', 'LOSS', 'SAVE']
+    for index in [COLUMN[key] for key in similar]:
+        tds[index] = '' if tds[index].text == '' else\
+                     tds[index].find('a').get('title')
+
+    tds[COLUMN['DATE']] = tds[COLUMN['DATE']].find('a').text
+    tds[COLUMN['BOXSCORE']] = tds[COLUMN['BOXSCORE']].find('a').get('href')
 
 def count_wins_losses(raw_data):
     """ From incoming list of ['W', 'L', ...] record win/loss streaks.

@@ -1,7 +1,11 @@
-import urllib3
 import bs4
+import csv
+import os
+import urllib3
 
 from collections import namedtuple
+
+import Auxiliary as aux
 
 AL = ['BAL', 'BOS', 'CHW', 'CLE', 'DET', 'HOU', 'KCR',
       'LAA', 'MIN', 'NYY', 'OAK', 'SEA', 'TBR', 'TEX', 'TOR']
@@ -30,6 +34,24 @@ class BrefScraper(object):
         self.teams = teams
         self.playoffs = playoffs
 
+        self.base_url = 'http://www.baseball-reference.com/'
+        self.team_post = '-schedule-scores.shtml'
+
+        self.csv = 'CSV'
+        self.delimiter = ';'
+
+    def _get_all_columns(self, rows):
+        """ Yield all columns of table row. Used for writing to file.
+        """
+        for row in rows:
+            tds = row.findAll('td')
+            if len(tds) < 21:
+                continue
+            if tds[0].contents == [] and not self.playoffs:
+                break
+            aux.columns_values(tds)
+            yield tds
+
     def _get_columns(self, rows, columns, cast=str):
         """ Yield filtered column(s) from table rows until exhausted.
             Results from playoffs included if flag was set.
@@ -42,15 +64,16 @@ class BrefScraper(object):
                 continue
             if tds[0].contents == [] and not self.playoffs:
                 break
-            # Contents in [u'...'] form
-            result.append([cast(tds[column].contents[0]) for column in columns])
+            result.append([cast(tds[column].text) for column in columns])
         return result
 
     def _get_rows(self, team):
         """ Return all table rows requested; including playoffs is flag set.
         """
-        url = 'http://www.baseball-reference.com/teams/{}/{}'\
-              '-schedule-scores.shtml'.format(team, self.year)
+        url = '{}/teams/{}/{}{}'.format(self.base_url,
+                                        team,
+                                        self.year,
+                                        self.team_post)
 
         http = urllib3.PoolManager()
         with http.request('GET', url) as resp:
@@ -66,8 +89,24 @@ class BrefScraper(object):
             Results from playoffs included if flag is set.
         """
         for team in self.teams:
-            runs = self._get_columns(self._get_rows(team), [8, 9], int)
+            runs = self._get_columns(self._get_rows(team),
+                                     [aux.COLUMN['R'], aux.COLUMN['RA']],
+                                     int)
             yield Content(team, runs)
+
+    def save_to_file(self):
+        """ Write all data for teams requested to file for archiving.
+        """
+        path = os.path.join(self.year, self.csv)
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+        for team in self.teams:
+            filepath = os.path.join(path, '{}.csv'.format(team))
+            with open(filepath, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile, delimiter=self.delimiter)
+                for entry in self._get_all_columns(self._get_rows(team)):
+                    writer.writerow(entry)
 
     def wins_losses(self):
         """ Yield a list with (team, ['W', 'L',...]) win/loss occurances.
@@ -75,5 +114,6 @@ class BrefScraper(object):
         for team in self.teams:
             # win_loss in [u'[L|T|W](-wo)?'] form
             outcomes = [win_loss[0][0] for win_loss in
-                        self._get_columns(self._get_rows(team), [7])]
+                        self._get_columns(self._get_rows(team),
+                                          [aux.COLUMN['W/L']])]
             yield Content(team, outcomes)
