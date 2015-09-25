@@ -1,15 +1,13 @@
 # Baseball-Reference-Plotting
 ```
-usage: BrefPlotter.py [-h] [--csv-dump] [-p]
+usage: BrefPlotter.py [-h] [--csv {r,w}] [-p]
                       (-t {AL,NL,MLB} | -c TEAM [TEAM ...]) [-y YEAR]
-                      [--csv-read]
-                      [--plot {outcome_conceding,outcome_scoring,win_loss_streaks,win_loss_margins}]
+                      [--plot {outcome_conceding,outcome_scoring,win_loss_margins,win_loss_streaks}]
                       [-a] [-n] [-x X-MAX] [--y-axis Y Y]
 
 optional arguments:
   -h, --help            show this help message and exit
-  --csv-dump            Set flag to store all table data in local csv files.
-                        (default: False)
+  --csv {r,w}           Set flag to save or read from csv files. (default: )
   -p, --playoffs        Set flag if including playoffs is desired. (default:
                         False)
   -t {AL,NL,MLB}, --teams {AL,NL,MLB}
@@ -21,8 +19,7 @@ optional arguments:
                         (default: 2015)
 
 Plotting:
-  --csv-read            Read data from local csv files. (default: False)
-  --plot {outcome_conceding,outcome_scoring,win_loss_streaks,win_loss_margins}
+  --plot {outcome_conceding,outcome_scoring,win_loss_margins,win_loss_streaks}
                         Data type requesting to plotted.
   -a, --average         Calculate and plot the average for teams selected.
   -n, --not-histogram   Set flag if histogram is not desired, data is linearly

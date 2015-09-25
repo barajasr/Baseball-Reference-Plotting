@@ -37,7 +37,7 @@ parser.add_argument('-y',
                          '(default: %(default)s)')
 plot_group = parser.add_argument_group('Plotting')
 plot_group.add_argument('--plot',
-                        choices=plot.OPTIONS.keys(),
+                        choices=sorted(plot.OPTIONS.keys()),
                         type=str,
                         default='',
                         help='Data type requesting to plotted.')
