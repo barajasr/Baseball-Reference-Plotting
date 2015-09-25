@@ -5,9 +5,10 @@ import BrefScraper as brf
 import Plot as plot
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--csv-dump',
-                    action='store_true',
-                    help='Set flag to store all table data in local csv files.'
+parser.add_argument('--csv',
+                    choices=brf.CSV[1:], # Already empty by default
+                    default='',
+                    help='Set flag to save or read from csv files.'
                          ' (default: %(default)s)')
 parser.add_argument('-p',
                     '--playoffs',
@@ -35,10 +36,6 @@ parser.add_argument('-y',
                     help='Desired target year for data sets to retrieve. '
                          '(default: %(default)s)')
 plot_group = parser.add_argument_group('Plotting')
-plot_group.add_argument('--csv-read',
-                        action='store_true',
-                        help='Read data from local csv files.'
-                             ' (default: %(default)s)')
 plot_group.add_argument('--plot',
                         choices=plot.OPTIONS.keys(),
                         type=str,
@@ -74,19 +71,17 @@ def main():
     args = parser.parse_args()
     if isinstance(args.teams, str):
         args.teams = brf.__getattribute__(args.teams)
-    if args.csv_read and args.csv_dump:
-        raise Exception('Reading and writing from bsv at the same time is silly')
 
     scraper = brf.BrefScraper(args.teams,
                               str(args.year),
                               args.playoffs,
-                              args.csv_read)
+                              args.csv)
 
-    if not args.csv_dump and args.plot != '':
+    if args.plot != '':
         plotter = plot.Plot(scraper, not args.not_histogram)
         plotter.set_default_axes(1, args.x_hint, args.y_axis[0], args.y_axis[1])
         plotter.plot(args.plot, args.average)
-    elif args.csv_dump and args.plot == '':
+    elif args.plot == '' and args.csv == 'w':
         scraper.save_to_file()
 
 if __name__ == '__main__':
