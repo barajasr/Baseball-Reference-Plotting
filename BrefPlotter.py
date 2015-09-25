@@ -7,7 +7,8 @@ import Plot as plot
 parser = argparse.ArgumentParser()
 parser.add_argument('--csv-dump',
                     action='store_true',
-                    help='Set flag to store data in local csv files.')
+                    help='Set flag to store all table data in local csv files.'
+                         ' (default: %(default)s)')
 parser.add_argument('-p',
                     '--playoffs',
                     action='store_true',
@@ -25,10 +26,8 @@ team_select.add_argument('-c',
                          metavar='TEAM',
                          nargs='+',
                          dest='teams',
-                         help='List of teams to get information from, use Baseball-'
-                              'Reference abreviations. Append " -- " after list to '
-                              'seperate from positional argument, when immediately '
-                              'following.')
+                         help='List of teams to get information from, use '
+                               'Baseball-Reference abreviations.')
 parser.add_argument('-y',
                     '--year',
                     type=int,
@@ -36,6 +35,10 @@ parser.add_argument('-y',
                     help='Desired target year for data sets to retrieve. '
                          '(default: %(default)s)')
 plot_group = parser.add_argument_group('Plotting')
+plot_group.add_argument('--csv-read',
+                        action='store_true',
+                        help='Read data from local csv files.'
+                             ' (default: %(default)s)')
 plot_group.add_argument('--plot',
                         choices=plot.OPTIONS.keys(),
                         type=str,
@@ -56,7 +59,7 @@ plot_group.add_argument('-x',
                         default=10,
                         metavar='X-MAX',
                         help='The minimum x-axis value end point in [1, x]; value '
-                              'will be increased as needed. (default: %(default)s)')
+                             'will be increased as needed. (default: %(default)s)')
 plot_group.add_argument('--y-axis',
                         type=int,
                         nargs=2,
@@ -71,14 +74,20 @@ def main():
     args = parser.parse_args()
     if isinstance(args.teams, str):
         args.teams = brf.__getattribute__(args.teams)
-    scraper = brf.BrefScraper(args.teams, str(args.year), args.playoffs)
+    if args.csv_read and args.csv_dump:
+        raise Exception('Reading and writing from bsv at the same time is silly')
 
-    if args.csv_dump and args.plot == '':
-        scraper.save_to_file()
-    elif not args.csv_dump and args.plot != '':
+    scraper = brf.BrefScraper(args.teams,
+                              str(args.year),
+                              args.playoffs,
+                              args.csv_read)
+
+    if not args.csv_dump and args.plot != '':
         plotter = plot.Plot(scraper, not args.not_histogram)
         plotter.set_default_axes(1, args.x_hint, args.y_axis[0], args.y_axis[1])
         plotter.plot(args.plot, args.average)
+    elif args.csv_dump and args.plot == '':
+        scraper.save_to_file()
 
 if __name__ == '__main__':
     main()

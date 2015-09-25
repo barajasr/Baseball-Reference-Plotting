@@ -91,6 +91,25 @@ class Plot(object):
             aux.average_data(cumulative, len(self.scraper.teams))
             to_plot(self, 'League Average', cumulative)
 
+    def plot_from_file(self, plot_type, average):
+        """ Main point of entry. Set off scraper, process and plot data.
+        """
+        # Dict with appropiate functions for data transforming defined
+        # at bottom of module.
+        (self.x_min, teams_raw, team_set, get_clean, to_plot) = OPTIONS[plot_type]
+        cumulative = aux.Data([], [])
+        for team, raw_data in teams_raw(self.scraper):
+            raw_set = team_set(raw_data)
+            data = get_clean(self, raw_set)
+            to_plot(self, team, data)
+
+            if average:
+                aux.aggragate_cumulative(cumulative, data)
+
+        if average:
+            aux.average_data(cumulative, len(self.scraper.teams))
+            to_plot(self, 'League Average', cumulative)
+
     def _plot_outcome_conceding(self, team, data):
         """ Sets the specific params for of win/loss outcome when team concedes
             x runs.

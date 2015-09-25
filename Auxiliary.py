@@ -1,27 +1,26 @@
 from collections import namedtuple
 
-TABLE_HEADERS =  ['RK',         # Ignore, relevant for online sorting
-                  'GM#',        # Game number of the season
-                  'DATE',       # Date of game
-                  'BOXSCORE',   # Link to boxscore
-                  'TM',         # Team looking up
-                  'HOME_AWAY',  # '' = home, '@' = away
-                  'OPP',        # Opponent
-                  'W/L',        # Win, loss, walkoff; '[W|L](-wo)?'
-                  'R',          # Runs scored
-                  'RA',         # Runs scored against
-                  'INN',        # Innings played if extras, '' otherwise
-                  'W-L',        # Running win/loss record
-                  'RANK',       # Rank within division
-                  'GB',         # Games back '[  Tied|(up )?\d.\d]'
-                  'WIN',        # Winning pitcher
-                  'LOSS',       # Lossing pitcher
-                  'SAVE',       # Saving pitcher if any
-                  'TIME',       # Duration of game
-                  'D/N',        # Day/Night game
-                  'ATTENDANCE', # Number of attendees
-                  'STREAK']     # Win/loss streak; '[-|+]+'
-COLUMN = dict(zip(TABLE_HEADERS, range(len(TABLE_HEADERS))))
+RK = 0          # Ignore, relevant for online sorting
+GM = 1          # Game number of the season
+DATE = 2        # Date of game
+BOX = 3         # Link to boxscore
+TM = 4          # Team looking up
+HOME_AWAY = 5   # '' = home, '@' = away
+OPP = 6         # Opponent
+WIN_LOSS = 7    # Win, loss, walkoff; '[W|L](-wo)?'
+RF = 8          # Runs scored
+RA = 9          # Runs scored against
+INN = 10        # Innings played if extras, '' otherwise
+RECORD = 11     # Running win/loss record
+RANK = 12       # Rank within division
+GB = 13         # Games back '[  Tied|(up )?\d.\d]'
+WIN_P = 14      # Winning pitcher
+LOSS_P = 15     # Lossing pitcher
+SAVE_P = 16     # Saving pitcher if any
+TIME = 17       # Duration of game
+DAY_NIGHT = 18  # Day/Night game
+ATTD = 19       # Number of attendees
+STREAK = 20     # Win/loss streak; '[-|+]+'
 
 TARGETS = ['scores', 'wins_losses']
 LOSS, WIN = 'L', 'W'
@@ -52,18 +51,23 @@ def average_data(cumulative, number_of_teams):
 def columns_values(tds):
     """ Take in the list of table data cells and return the values required.
     """
-    similar = ['RK', 'GM#', 'TM', 'HOME_AWAY', 'OPP', 'W/L', 'R', 'RA', 'INN',
-               'W-L', 'RANK', 'GB', 'TIME', 'D/N', 'ATTENDANCE', 'STREAK']
-    for index in [COLUMN[key] for key in similar]:
+    similar = [RK, GM, TM, HOME_AWAY, OPP, WIN_LOSS, RF, RA, INN,
+               RECORD, RANK, GB, TIME, DAY_NIGHT, ATTD, STREAK]
+    for index in similar:
         tds[index] = tds[index].text
 
-    similar = ['WIN', 'LOSS', 'SAVE']
-    for index in [COLUMN[key] for key in similar]:
+    similar = [WIN_P, LOSS_P, SAVE_P]
+    for index in similar:
         tds[index] = '' if tds[index].text == '' else\
                      tds[index].find('a').get('title')
 
-    tds[COLUMN['DATE']] = tds[COLUMN['DATE']].find('a').text
-    tds[COLUMN['BOXSCORE']] = tds[COLUMN['BOXSCORE']].find('a').get('href')
+    # Playoffs changes behavior
+    has_link = tds[DATE].find('a')
+    if has_link is not None:
+        tds[DATE] = has_link.text
+    else:
+        tds[DATE] = tds[DATE].text
+    tds[BOX] = tds[BOX].find('a').get('href')
 
 def count_wins_losses(raw_data):
     """ From incoming list of ['W', 'L', ...] record win/loss streaks.
