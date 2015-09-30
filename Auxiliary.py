@@ -67,7 +67,13 @@ def columns_values(tds):
         tds[DATE] = has_link.text
     else:
         tds[DATE] = tds[DATE].text
-    tds[BOX] = tds[BOX].find('a').get('href')
+
+    # Early 1900s may not have boxscores
+    has_link = tds[BOX].find('a')
+    if has_link is not None:
+        tds[BOX] = has_link.text
+    else:
+        tds[BOX] = tds[BOX].text
 
 def count_wins_losses(raw_data):
     """ From incoming list of ['W', 'L', ...] record win/loss streaks.
