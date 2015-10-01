@@ -2,7 +2,8 @@
 import argparse
 
 import BrefScraper as brf
-import Plot as plot
+import Plot
+import Teams
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--csv',
@@ -19,7 +20,7 @@ team_select = parser.add_mutually_exclusive_group(required=True)
 team_select.add_argument('-t',
                          '--teams',
                          type=str,
-                         choices=['AL', 'NL', 'MLB'],
+                         choices=Teams.LEAGUES,
                          help='List of teams by League or all.')
 team_select.add_argument('-c',
                          '--teams-custom',
@@ -37,7 +38,7 @@ parser.add_argument('-y',
                          '(default: %(default)s)')
 plot_group = parser.add_argument_group('Plotting')
 plot_group.add_argument('--plot',
-                        choices=sorted(plot.OPTIONS.keys()),
+                        choices=Plot.OPTIONS.keys(),
                         type=str,
                         default='',
                         help='Data type requesting to plotted.')
@@ -69,16 +70,13 @@ def main():
     """ Collect data and plot as required from arguments.
     """
     args = parser.parse_args()
-    if isinstance(args.teams, str):
-        args.teams = brf.__getattribute__(args.teams)
-
     scraper = brf.BrefScraper(args.teams,
                               str(args.year),
                               args.playoffs,
                               args.csv)
 
     if args.plot != '':
-        plotter = plot.Plot(scraper, not args.not_histogram)
+        plotter = Plot.Plot(scraper, not args.not_histogram)
         plotter.set_default_axes(1, args.x_hint, args.y_axis[0], args.y_axis[1])
         plotter.plot(args.plot, args.average)
     elif args.plot == '' and args.csv == 'w':

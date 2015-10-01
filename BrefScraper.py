@@ -6,31 +6,23 @@ import urllib3
 from collections import namedtuple
 
 import Auxiliary as aux
+import Teams
 
-AL = ['BAL', 'BOS', 'CHW', 'CLE', 'DET', 'HOU', 'KCR',
-      'LAA', 'MIN', 'NYY', 'OAK', 'SEA', 'TBR', 'TEX', 'TOR']
-NL = ['ARI', 'ATL', 'CHC', 'CIN', 'COL', 'LAD', 'MIA',
-      'MIL', 'NYM', 'PHI', 'PIT', 'SDP', 'SFG', 'STL', 'WSN']
-MLB = sorted(AL + NL)
 CSV = ['', 'r', 'w']
 Content = namedtuple('Content', 'team data')
 
 class BrefScraper(object):
     """ Class used for scrapping baseball reference team pages.
     """
-    def __init__(self, teams=MLB, year='2015', playoffs=False, csv_mode=''):
+    def __init__(self, teams=Teams.MLB, year='2015', playoffs=False, csv_mode=''):
         """ Prep class for scrapping for information.
         """
-        def valid_teams_subset(teams):
-            """ Ensure teams list is valid.
-            """
-            for team in teams:
-                if team not in MLB:
-                    return False
-            return True
-        if not valid_teams_subset(teams):
-            raise ValueError('{} contains one or more invalid entries.'
-                             .format(teams))
+        if teams in Teams.LEAGUES:
+            teams = Teams.TEAMS[teams](year)
+        else:
+            if not Teams.valid_teams_subset(year, teams):
+                raise ValueError('{} contains one or more invalid entries.'
+                                 .format(teams))
         self.year = year
         self.teams = teams
         self.playoffs = playoffs
@@ -56,7 +48,7 @@ class BrefScraper(object):
     def _get_rows(self, team):
         """ Return all table rows requested.
         """
-        url = '{}/teams/{}/{}{}'.format(self.base_url,
+        url = '{}teams/{}/{}{}'.format(self.base_url,
                                         team,
                                         self.year,
                                         self.team_post)
