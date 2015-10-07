@@ -99,9 +99,9 @@ def angels(year, teams):
 def astros(year, teams, league):
     """ Append appropriate Astros abbreviation for year if applicable.
     """
-    if year >= 2013 and  league == AL:
+    if year >= 2013 and league == AL:
         teams.append('HOU')
-    elif year >= 1962 and league in NL:
+    elif year >= 1962 and year < 2013  and league == NL:
         teams.append('HOU')
 
 def athletics(year, teams):
